@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import TodoItem from "../components/TodoItem";
 import DarkModeToggle from "../components/DarkModeToggle";
 import ThemeSwitcher from "../components/ThemeSwitcher";
+import { AnimatePresence, Reorder } from "framer-motion";
 
 export default function Home() {
   const [todos, setTodos] = useState([]);
   const [text, setText] = useState("");
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     const saved = localStorage.getItem("todos");
@@ -21,6 +23,12 @@ export default function Home() {
     setTodos([...todos, { id: Date.now(), text, done: false }]);
     setText("");
   };
+
+  const filteredTodos = todos.filter((t) => {
+    if (filter === "active") return !t.done;
+    if (filter === "done") return t.done;
+    return true;
+  });
 
   return (
     <div className="min-h-screen w-screen flex items-center justify-center p-3 sm:p-4">
@@ -42,18 +50,33 @@ export default function Home() {
             <DarkModeToggle />
           </div>
         </div>
+        <div className="flex gap-2 mb-4">
+          {["all", "active", "done"].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-lg text-sm transition ${
+                filter === f ? "text-white" : "opacity-70"
+              }`}
+              style={{
+                backgroundColor:
+                  filter === f ? "var(--primary)" : "var(--card)",
+                color: filter === f ? "var(--text)" : "inherit",
+              }}
+            >
+              {f.toUpperCase()}
+            </button>
+          ))}
+        </div>
 
         {/* Input */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && add()}
             placeholder="Add task..."
-            className="
-              flex-1 px-4 py-3 rounded-lg border
-              bg-transparent
-              text-base
-            "
+            className="flex-1 px-4 py-3 rounded-lg border bg-transparent"
           />
 
           <button
@@ -71,11 +94,22 @@ export default function Home() {
         </div>
 
         {/* List */}
-        <div className="space-y-3 max-h-[60vh] sm:max-h-[50vh] overflow-y-auto">
-          {todos.map((t) => (
-            <TodoItem key={t.id} todo={t} setTodos={setTodos} />
+        <Reorder.Group
+          axis="y"
+          values={todos}
+          onReorder={setTodos}
+          className="space-y-3"
+        >
+          {filteredTodos.map((t) => (
+            <Reorder.Item
+              key={t.id}
+              value={t}
+              className="cursor-grab active:cursor-grabbing"
+            >
+              <TodoItem todo={t} setTodos={setTodos} />
+            </Reorder.Item>
           ))}
-        </div>
+        </Reorder.Group>
       </div>
     </div>
   );
