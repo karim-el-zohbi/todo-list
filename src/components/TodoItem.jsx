@@ -61,8 +61,17 @@ export default function TodoItem({ todo, setTodos }) {
 
       {/* Actions */}
       <div className="flex gap-2 text-sm">
-        {!edit && <button onClick={() => setEdit(true)}>✏️</button>}
-        <button onClick={remove}>🗑</button>
+        {!edit && (
+          <button
+            onClick={() => setEdit(true)}
+            style={{ backgroundColor: "var(--bg)" }}
+          >
+            ✏️
+          </button>
+        )}
+        <button onClick={remove} style={{ backgroundColor: "var(--bg)" }}>
+          🗑
+        </button>
       </div>
     </motion.div>
   );
